@@ -73,7 +73,7 @@ Choose a passage that fits the **passage criteria** from the args (or the defaul
 
 If the criteria references a liturgical occasion (e.g., Maundy Thursday, Advent, Lent), pick a passage traditionally associated with that moment. For Maundy Thursday specifically: consider John 13 (foot washing), Luke 22:14–30 (last supper), or John 17 (high priestly prayer).
 
-The passage should be 8–20 verses — long enough to be rich, short enough to hold in silence.
+**Passage length:** Target 3–6 verses (roughly 50–150 words) — short enough to read aloud in under a minute, so it can be repeated 2–3 times without crowding out reflection. A brief scene, parable, or saying from the Gospels is ideal. Avoid passages over 200 words; longer passages shift the practice toward study rather than contemplation.
 
 ### 2. Craft phase-specific spiritual questions
 
