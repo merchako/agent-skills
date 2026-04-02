@@ -128,3 +128,5 @@ Include approximate timing markers in the guide (e.g., `*(~5 minutes)*`).
 ## Output format
 
 Output a single fenced markdown code block. The content inside should be clean, copy-paste-ready markdown — no meta-commentary before or after. Just the block.
+
+See [EXAMPLE.md](./EXAMPLE.md) in this skill directory for a complete reference output showing the expected quality, pacing, and tone.
