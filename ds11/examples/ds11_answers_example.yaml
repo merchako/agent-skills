@@ -1,0 +1,112 @@
+# DS-11 answers — example with fake data (safe to share / commit)
+# All names, addresses, SSNs, phone numbers, and dates are fictional.
+# Fill in every value. Leave a field blank (empty string) if not applicable.
+
+# ── APPLICANT (CHILD) ────────────────────────────────────────────────
+applicant:
+  last_name: Kowalski
+  first_name: Jordan
+  middle_name: Ellis
+  full_name: "Kowalski, Jordan Ellis"    # Last, First Middle — repeated name field
+  date_of_birth: 07/22/2020             # MM/DD/YYYY
+  place_of_birth_city: Portland
+  place_of_birth_state_or_country: Oregon   # full state name if US, country if abroad
+  ssn: 513294867                        # 9 digits, no dashes; "None" if not yet issued
+  sex: M                                # M / F / X
+  hair_color: Brown                     # Black / Blonde / Brown / Gray / Red / Sandy / White / Bald / Unknown
+  eye_color: Hazel                      # Black / Blue / Brown / Gray / Green / Hazel / Maroon / Pink / Unknown
+  height_feet: 3
+  height_inches: 2
+  occupation: Student
+  employer_or_school: Sunridge Montessori
+  married: false
+
+# ── MAILING ADDRESS (Applicant Address fields on form) ───────────────
+# Where the passport should be sent. Use current address; if you move
+# during processing, call 1-877-487-2778 to update before it ships.
+address:
+  street: 204 Birchwood Ln
+  apt_unit:
+  city: Columbus
+  state: OH
+  zip: "43201"
+  country:                              # leave blank if USA
+
+# ── PERMANENT / HOME ADDRESS ─────────────────────────────────────────
+# Physical home if different from mailing (required when mailing is a PO Box).
+permanent_address:
+  street: 1847 Elmwood Dr
+  apt_unit:
+  city: Westerville
+  state: OH
+  zip: "43081"
+  country:
+
+# ── CONTACT ──────────────────────────────────────────────────────────
+contact:
+  email: j.kowalski@samplemail.net
+  primary_phone: "+16145550129"
+  primary_phone_type: Cell              # Home / Work / Cell  (Mom)
+  secondary_phone: "+16145550874"
+  secondary_phone_type: Cell            # Home / Work / Cell  (Dad)
+
+# ── TRAVEL PLANS ─────────────────────────────────────────────────────
+travel:
+  countries: Canada                     # leave blank if no plans; script writes "none" automatically
+  departure_date: 08/15/2026
+  return_date: 08/29/2026
+
+# ── EMERGENCY CONTACT ────────────────────────────────────────────────
+emergency_contact:
+  name: Marcus David Kowalski
+  street: 1847 Elmwood Dr
+  apt_unit:
+  city: Westerville
+  state: OH
+  zip: "43081"
+  phone: "+16145550874"
+  relationship: Father
+
+# ── PREVIOUS U.S. PASSPORT ───────────────────────────────────────────
+previous_passport:
+  had_book: true
+  book_name_used: Jordan Ellis Kowalski
+  book_number: "A12345678"
+  book_issue_date: 03/10/2022
+  book_disposition: Submitting with application   # Submitting with application / Lost / Stolen / In my possession
+  had_card: true
+  card_name_used: Jordan Ellis Kowalski
+  card_number:                          # leave blank if unknown
+  card_issue_date:
+  card_disposition: Submitting with application
+
+# ── PARENT 1 – FATHER (signing parent) ───────────────────────────────
+parent_1:
+  last_name: Kowalski II
+  first_name: Marcus
+  middle_name: David
+  sex: M                                # M / F
+  date_of_birth: 03/14/1987            # MM/DD/YYYY
+  place_of_birth_city: Detroit
+  place_of_birth_state_or_country: Michigan
+  us_citizen: true
+  citizenship_how: by birth             # "by birth" or "naturalization"
+  naturalization_cert:                  # certificate number if naturalized; else leave blank
+
+# ── PARENT 2 – MOTHER ────────────────────────────────────────────────
+parent_2:
+  last_name: Kowalski
+  first_name: Priya
+  middle_name: Nair
+  sex: F                                # M / F
+  date_of_birth: 09/05/1989            # MM/DD/YYYY
+  place_of_birth_city: Seattle
+  place_of_birth_state_or_country: Washington
+  us_citizen: true
+  citizenship_how: by birth
+  naturalization_cert:
+
+# ── PASSPORT TYPE ────────────────────────────────────────────────────
+passport_type:
+  book: true    # standard travel booklet — $135 + $35 acceptance fee
+  card: true    # wallet card, land/sea only, not valid for air travel — $30 extra
