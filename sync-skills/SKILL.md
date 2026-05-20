@@ -96,6 +96,48 @@ Report:
 
 ---
 
+## Checking modified skills back into source
+
+Skills installed globally live at `~/.agents/skills/<name>/`. Edits made there are **not** automatically reflected in the source repo. Use this workflow to commit changes back.
+
+### Step 1: Find the source repo
+
+Check the three possible locations (in order of likelihood):
+
+```bash
+ls ~/Developer/agent-skills-private/<name>/ 2>/dev/null
+ls ~/Developer/agent-skills/<name>/ 2>/dev/null
+ls ~/Developer/second-brain-skills/<name>/ 2>/dev/null
+```
+
+Use whichever exists. If none do, the skill was never checked in — create the directory in the appropriate repo (private for personal/vault skills, `agent-skills` for general, `second-brain-skills` for Obsidian-specific).
+
+### Step 2: Diff to sanity-check
+
+```bash
+diff ~/.agents/skills/<name>/ ~/Developer/<repo>/<name>/
+```
+
+Review what's new or changed before copying.
+
+### Step 3: Copy changed files
+
+```bash
+cp ~/.agents/skills/<name>/<file> ~/Developer/<repo>/<name>/<file>
+```
+
+Copy specific files rather than the whole directory to avoid overwriting unrelated source-only files.
+
+### Step 4: Commit and push
+
+```bash
+git -C ~/Developer/<repo> add <name>/<file>
+git -C ~/Developer/<repo> commit -m "vault: describe what changed"
+git -C ~/Developer/<repo> push
+```
+
+---
+
 ## Alternative: Sync from source repos (re-download approach)
 
 If the user wants to re-fetch from GitHub rather than symlink local copies — for instance to pin a version or install into a project without global installs — use the `npx skills` CLI approach instead:
