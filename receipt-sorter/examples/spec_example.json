@@ -1,0 +1,43 @@
+{
+  "dest": "/Users/you/Documents/Receipts",
+  "outputs": [
+    {
+      "folder": "Home Depot",
+      "name": "2020-01-04 Home Depot $17.74 (+return).pdf",
+      "pages": [
+        {"src": "/Users/you/Desktop/Scan inbox/Scanned Document 5.pdf", "page": 12},
+        {"src": "/Users/you/Desktop/Scan inbox/Scanned Document 5.pdf", "page": 13}
+      ]
+    },
+    {
+      "folder": "Home Depot",
+      "name": "2021-05-11 Home Depot $241.22.pdf",
+      "pages": [
+        {"src": "/Users/you/Desktop/Scan inbox/Scanned Document.pdf", "page": 1}
+      ]
+    },
+    {
+      "folder": "Uniqlo",
+      "name": "2020-12-14 Uniqlo $114.86.pdf",
+      "pages": [
+        {"src": "/Users/you/Desktop/Scan inbox/Scanned Document 6.pdf", "page": 2},
+        {"src": "/Users/you/Desktop/Scan inbox/Scanned Document 6.pdf", "page": 3}
+      ]
+    },
+    {
+      "folder": "Medical/Megan Mercado",
+      "name": "2021-01-19 Kirkwood Eye Center $236.70.pdf",
+      "pages": [
+        {"src": "/Users/you/Documents/Receipts/_original scans/eye exam.pdf", "page": 1},
+        {"src": "/Users/you/Documents/Receipts/_original scans/eye exam.pdf", "page": 2}
+      ]
+    },
+    {
+      "folder": "ThreadedArmor",
+      "name": "ThreadedArmor $116.19 (no date on receipt).pdf",
+      "pages": [
+        {"src": "/Users/you/Desktop/Scan inbox/checkout.jpeg"}
+      ]
+    }
+  ]
+}
