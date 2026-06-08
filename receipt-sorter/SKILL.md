@@ -58,11 +58,23 @@ Default convention, which works well and is what to propose first:
   ambiguous (a vendor with many receipts, a multi-origin return) using the *actual*
   contents, not in the abstract.
 
-Handle non-standard items explicitly and ask where they go:
-- **Medical receipts** — often best grouped per patient (`Medical/<Patient Name>/`).
-- **Product labels / box photos** — not purchases; a `Product references/` subfolder.
+Handle non-standard items by **asking the user where they go rather than silently filing
+or excluding them** — surface the trade-off so they decide:
+- **Medical receipts** — often best grouped per patient (`Medical/<Patient Name>/`); they're
+  sensitive and may belong with health records rather than retail.
+- **Product labels / box photos** — not purchases; a `Product references/` subfolder keeps
+  them without polluting the vendor folders.
 - **Undated online order screenshots** — keep them, but flag that the name can't carry a
   date (e.g. `Vendor $total (no date on receipt).pdf`).
+- **Borderline items** that happen to sit in a receipts folder but aren't clearly purchase
+  receipts — a bank or credit-card statement, a transaction-export CSV, a plain
+  scan-to-PDF, an order/return slip with no amount, or some unrelated document. Don't
+  assume. Ask, and lay out both sides: the user might **exclude** it (a statement or CSV
+  isn't a receipt and usually lives in a different system; a stray doc isn't part of this
+  archive) or **include** it (they treat it as a financial record worth filing alongside
+  the rest, or it's really an invoice/receipt in disguise). Then merge it in per the answer
+  — give it a sensible home (its own subfolder, or the matching vendor) rather than dropping
+  it.
 
 ### 4. Build the files
 Write a JSON spec (see `examples/spec_example.json`) mapping each output file to its
