@@ -58,6 +58,10 @@ path, then opens and focuses it. Relay that summary back to the user.
   `pull/<n>/head` into a local `pr-<n>` branch and builds the worktree from that.
 - **Branch → base.** Prefers the branch on `origin`; falls back to an existing
   local branch; otherwise creates a new branch off the repo's default base.
+- **Already open → reuse.** Before creating, the script checks whether the
+  target branch is already checked out in a Supacode worktree (via
+  `git worktree list`, mapping the path to a Supacode id). If so it just focuses
+  that worktree instead of creating a duplicate — so re-running is safe and idempotent.
 - **Finding the new worktree.** `supacode repo worktree-new` doesn't print the
   new id, so the script snapshots `supacode worktree list` before and after and
   diffs. `focus` can time out while the worktree initializes, so it retries.
@@ -65,9 +69,8 @@ path, then opens and focuses it. Relay that summary back to the user.
 ## When it can't auto-detect / errors
 
 - "Supacode doesn't know repo …" → `supacode repo open '<path>'`, then rerun.
-- `worktree-new` fails because a worktree for that ref already exists → it's
-  probably already open; find it with `supacode worktree list` and focus it:
-  `supacode worktree focus -w '<id>'`.
+- Re-opening a PR/branch that's already open just re-focuses it (see reuse above) —
+  no error, no duplicate.
 - Needs `gh` (for PRs) and `jq` on PATH. `gh` must be authed for private repos.
 
 ## Doing it by hand (no script)

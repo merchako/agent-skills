@@ -46,6 +46,40 @@ decode() { printf '%b' "${1//%/\\x}"; }
 # strip ANSI (the focused worktree is printed underlined) and blank lines
 list_worktrees() { supacode worktree list 2>/dev/null | sed $'s/\x1b\\[[0-9;]*m//g' | sed '/^$/d'; }
 
+# If $1 (a branch) is already checked out in one of $repo_path's git worktrees,
+# print the matching Supacode worktree id (so we can focus it instead of failing
+# on a duplicate). git forbids the same branch in two worktrees, so the match is
+# unique. Maps the worktree's filesystem path to a Supacode id by exact path.
+find_existing_worktree() {
+  local br="$1" wt_path="" want enc dec line
+  while IFS= read -r line; do
+    case "$line" in
+      "worktree "*) wt_path="${line#worktree }" ;;
+      "branch refs/heads/$br")
+        want="$(cd "$wt_path" 2>/dev/null && pwd -P)" || { wt_path=""; continue; }
+        while IFS= read -r enc; do
+          [[ -n "$enc" ]] || continue
+          dec="$(decode "$enc")"; dec="${dec%/}"
+          [[ "$dec" == "$want" ]] && { printf '%s' "$enc"; return 0; }
+        done < <(list_worktrees)
+        return 1   # git worktree exists but Supacode isn't tracking it
+        ;;
+    esac
+  done < <(git -C "$repo_path" worktree list --porcelain 2>/dev/null)
+  return 1
+}
+
+# Bring Supacode forward and focus a worktree, retrying while it initializes.
+open_and_focus() {
+  supacode open >/dev/null 2>&1 || true
+  local i
+  for i in 1 2 3 4; do
+    supacode worktree focus -w "$1" >/dev/null 2>&1 && return 0
+    sleep 3
+  done
+  return 1
+}
+
 # ---- classify input -----------------------------------------------------
 owner_repo="" pr="" branch="" mode=""
 if [[ -z "$force_branch" && "$input" =~ github\.com/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
@@ -117,20 +151,47 @@ if [[ "$mode" == "pr" && -z "$owner_repo" ]]; then
     || die "couldn't infer owner/repo for PR #$pr from $repo_path"
 fi
 
-# ---- resolve branch + base ----------------------------------------------
-base="" pr_url=""
+# ---- resolve the target branch NAME (no fetching yet) -------------------
+# Determine the name first so we can check for an already-open worktree before
+# doing anything that mutates refs (a fork fetch can't write a checked-out branch).
+branch="" base="" pr_url="" is_fork=""
 if [[ "$mode" == "pr" ]]; then
   command -v gh >/dev/null 2>&1 || die "gh CLI not found (needed to resolve PR #$pr)"
   meta="$(gh pr view "$pr" --repo "$owner_repo" \
             --json headRefName,baseRefName,isCrossRepository,url 2>/dev/null)" \
     || die "gh couldn't read PR #$pr in $owner_repo"
-  branch="$(jq -r .headRefName <<<"$meta")"
   pr_url="$(jq -r .url <<<"$meta")"
-  cross="$(jq -r .isCrossRepository <<<"$meta")"
-  if [[ "$cross" == "true" ]]; then
-    # Fork PR: the head branch isn't on origin. Fetch the PR head into a local
-    # branch and build the worktree from that.
-    branch="pr-$pr"
+  if [[ "$(jq -r .isCrossRepository <<<"$meta")" == "true" ]]; then
+    is_fork=1; branch="pr-$pr"   # fork head isn't on origin; fetched into this local branch below
+  else
+    branch="$(jq -r .headRefName <<<"$meta")"
+  fi
+else
+  branch="$input"
+fi
+
+# ---- reuse: if that branch is already open as a worktree, just focus it ----
+existing_id="$(find_existing_worktree "$branch" || true)"
+if [[ -n "$existing_id" ]]; then
+  if [[ -n "$dry_run" ]]; then
+    echo "--- dry run (nothing changed) ---"
+    [[ -n "$pr_url" ]] && echo "PR:       $pr_url"
+    echo "branch:   $branch"
+    echo "would reuse existing worktree: $(decode "$existing_id")"
+    exit 0
+  fi
+  open_and_focus "$existing_id" || true
+  echo "---"
+  [[ -n "$pr_url" ]] && echo "PR:       $pr_url"
+  echo "branch:   $branch"
+  echo "worktree: $(decode "$existing_id")"
+  echo "already open in Supacode — focused the existing worktree."
+  exit 0
+fi
+
+# ---- resolve base (and fetch what's needed) -----------------------------
+if [[ "$mode" == "pr" ]]; then
+  if [[ -n "$is_fork" ]]; then
     echo "PR #$pr is from a fork — fetching pull/$pr/head into $branch" >&2
     git -C "$repo_path" fetch origin "pull/$pr/head:$branch" >&2 || die "failed to fetch pull/$pr/head"
     base="$branch"
@@ -172,13 +233,7 @@ after="$(list_worktrees | sort)"
 new_id="$(comm -13 <(printf '%s\n' "$before") <(printf '%s\n' "$after") | head -1)"
 
 # ---- bring Supacode forward and focus the new worktree -------------------
-supacode open >/dev/null 2>&1 || true
-if [[ -n "$new_id" ]]; then
-  for attempt in 1 2 3 4; do
-    if supacode worktree focus -w "$new_id" >/dev/null 2>&1; then break; fi
-    sleep 3   # the worktree may still be initializing (install scripts, etc.)
-  done
-fi
+[[ -n "$new_id" ]] && open_and_focus "$new_id" || true
 
 # ---- report -------------------------------------------------------------
 echo "---"
