@@ -223,14 +223,31 @@ if [[ -n "$dry_run" ]]; then
   exit 0
 fi
 
-# ---- create the worktree, discovering the new id by diffing the list -----
-before="$(list_worktrees | sort)"
-echo "+ supacode repo worktree-new -r <$repo_path> --branch $branch --base $base --fetch" >&2
-supacode repo worktree-new -r "$repo_id" --branch "$branch" --base "$base" --fetch \
+# ---- create the worktree ------------------------------------------------
+# Pass an explicit --name with any '/' flattened to '-' so the worktree always
+# lands at a single-segment path (repos/<repo>/<name>). Without it Supacode names
+# the folder after the branch, and a slashed branch such as
+# claude/confident-mayer-XRAKb nests as repos/<repo>/claude/confident-mayer-XRAKb
+# — inconsistent with every other worktree and awkward to eyeball. The branch
+# checked out is still the real (unflattened) $branch; only the folder is renamed.
+wt_name="${branch//\//-}"
+echo "+ supacode repo worktree-new -r <$repo_path> --branch $branch --base $base --name $wt_name --fetch" >&2
+supacode repo worktree-new -r "$repo_id" --branch "$branch" --base "$base" --name "$wt_name" --fetch \
   || die "supacode repo worktree-new failed (a worktree for '$branch' may already exist — check: supacode worktree list)"
-after="$(list_worktrees | sort)"
 
-new_id="$(comm -13 <(printf '%s\n' "$before") <(printf '%s\n' "$after") | head -1)"
+# ---- discover the new worktree's id -------------------------------------
+# git registers the worktree synchronously, but `supacode worktree list` (and
+# therefore `focus`) is eventually consistent — it lags a few seconds behind.
+# find_existing_worktree maps the branch's git worktree to a Supacode id and
+# returns non-zero *until Supacode catches up*, so poll it. (The previous approach
+# diffed the list once, immediately, so it almost always saw an empty diff during
+# this window — that was the "id couldn't be auto-detected" failure.)
+new_id=""
+for _ in {1..20}; do
+  new_id="$(find_existing_worktree "$branch" || true)"
+  [[ -n "$new_id" ]] && break
+  sleep 2
+done
 
 # ---- bring Supacode forward and focus the new worktree -------------------
 [[ -n "$new_id" ]] && open_and_focus "$new_id" || true
@@ -243,6 +260,11 @@ if [[ -n "$new_id" ]]; then
   echo "worktree: $(decode "$new_id")"
   echo "opened and focused in Supacode."
 else
-  echo "worktree created, but its id couldn't be auto-detected (it may have already existed)."
-  echo "find and focus it with: supacode worktree list"
+  # git created it but Supacode still hasn't surfaced it (it may be initializing).
+  # Point at the git path and how to focus it once it appears.
+  wt_path="$(git -C "$repo_path" worktree list --porcelain 2>/dev/null \
+    | awk -v b="branch refs/heads/$branch" '/^worktree /{p=$2} $0==b{print p; exit}')"
+  echo "worktree: ${wt_path:-<created>}"
+  echo "created, but Supacode hasn't surfaced it yet (it may still be initializing)."
+  echo "focus it once it appears:  supacode worktree list   then   supacode worktree focus -w <id>"
 fi

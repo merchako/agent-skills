@@ -62,9 +62,20 @@ path, then opens and focuses it. Relay that summary back to the user.
   target branch is already checked out in a Supacode worktree (via
   `git worktree list`, mapping the path to a Supacode id). If so it just focuses
   that worktree instead of creating a duplicate — so re-running is safe and idempotent.
+- **Single-segment folder.** The script passes `--name` with any `/` in the
+  branch flattened to `-` (e.g. `claude/foo` → folder `claude-foo`). Without it
+  Supacode names the folder after the branch and a slashed branch nests as
+  `repos/<repo>/claude/foo`, inconsistent with every other worktree. The branch
+  itself is unchanged — only the folder name is flattened.
 - **Finding the new worktree.** `supacode repo worktree-new` doesn't print the
-  new id, so the script snapshots `supacode worktree list` before and after and
-  diffs. `focus` can time out while the worktree initializes, so it retries.
+  new id. git registers the worktree immediately, but `supacode worktree list`
+  (and thus `focus`) is **eventually consistent** — it lags a few seconds. So the
+  script polls: it maps the branch's git worktree to a Supacode id and retries
+  until Supacode surfaces it (up to ~40s), then focuses (also retried while the
+  worktree initializes). If Supacode still hasn't surfaced it, the script prints
+  the git worktree path and how to focus it manually once it appears. (The old
+  version diffed the list once, immediately — during the lag the diff was empty,
+  which is why it used to report "id couldn't be auto-detected.")
 
 ## When it can't auto-detect / errors
 
@@ -78,9 +89,11 @@ path, then opens and focuses it. Relay that summary back to the user.
 ```bash
 gh pr view <N> --repo <owner/repo> --json headRefName,baseRefName,isCrossRepository,url
 supacode repo list                 # find the percent-encoded repo id
+# --name flattens '/' to '-' so the folder is single-segment (claude/foo -> claude-foo)
 supacode repo worktree-new -r "<repo-id>" --branch "<headRefName>" \
-  --base "origin/<headRefName>" --fetch
-supacode worktree list             # diff to find the new id (the new folder)
+  --base "origin/<headRefName>" --name "<headRefName with / -> ->" --fetch
+supacode worktree list             # NOTE: eventually consistent — re-run for a few
+                                   # seconds until the new folder appears, then grab its id
 supacode open
 supacode worktree focus -w "<new-worktree-id>"
 ```
