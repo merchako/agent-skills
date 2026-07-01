@@ -84,3 +84,7 @@ stays local.
 - **Inline image URLs expire** (~24h); prefer `webp`/`sidecar` for anything durable.
 - No HTML flavor on the clipboard (e.g. from clipboard-history managers, which store text only)
   → degrades to a best-effort plain-text parse and warns.
+- **Replies**: Discord doesn't copy the replied-to reference, so a reply's "replying to X"
+  context can't be recovered — only the reply's own text. Copy the referenced message too if needed.
+- **`---`**: used as the between-group separator; a literal `---` typed in a message renders as a
+  rule as well (both are dividers, but indistinguishable in the output).

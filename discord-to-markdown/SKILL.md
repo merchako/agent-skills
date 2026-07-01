@@ -111,6 +111,13 @@ edit it by hand.
 - **Plain-text fallback**: if the clipboard has no HTML flavor (e.g. pasted from clipboard
   history), the script degrades to a best-effort text parse and warns — lists and links can't be
   recovered. Re-copy from Discord live to get full structure.
+- **Replies are unrecoverable**: when you copy a message that is a Discord *reply*, Discord does
+  **not** include the replied-to preview in the clipboard (verified: nothing sits between the
+  message container and its header). Only the reply's own text is copied, so the "replying to X: …"
+  context is lost. If it matters, copy the referenced message too.
+- **`---` collision**: author-groups are separated by a `---` rule; if someone *typed* `---` in a
+  message it renders as a rule too. Both are horizontal dividers, so it reads fine, but they are
+  not distinguishable in the output.
 
 ## Raycast
 
