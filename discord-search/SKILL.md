@@ -139,29 +139,59 @@ Good for reconstructing a conversation once search points you at a message/time.
 
 ## Setup (only if `doctor`/`status` show it isn't configured)
 
-Install first (macOS/Linux): `brew install openclaw/tap/discrawl`
+**Install** (discrawl is a single Go binary; the wiretap parses Discord's Chromium
+cache, which is the same format on every OS):
+
+| OS | Install |
+| -- | ------- |
+| macOS / Linux | `brew install openclaw/tap/discrawl` |
+| Windows | No packaged build yet — `go install github.com/openclaw/discrawl/cmd/discrawl@latest` (needs [Go](https://go.dev/dl)), or build from source |
 
 ### Path A — no bot token (wiretap mode; the common case)
 
 `discrawl init` **requires a valid bot token** (it validates against the Discord API),
-so tokenless users write the config directly. This block auto-detects whether the
-user runs the normal Discord app or Discord PTB (whichever cache is bigger wins);
-adjust `default_guild_id` to the user's primary server:
+so tokenless users write the config directly. Two OS-dependent paths matter:
+
+1. **Where discrawl expects its config** — don't guess; `discrawl doctor` prints
+   `config_path=…` even when no config exists yet. (macOS:
+   `~/Library/Application Support/discrawl/` · Linux: `$XDG_CONFIG_HOME/discrawl/` ·
+   Windows: `%AppData%\discrawl\` — but trust doctor's output.)
+2. **Where the Discord client caches** — pick the candidate with the biggest
+   `Cache/` dir (that's the flavor the user actually runs):
+
+| OS | Candidates (stable · PTB · sandboxed) |
+| -- | ------------------------------------- |
+| macOS | `~/Library/Application Support/discord` · `…/discordptb` |
+| Linux | `~/.config/discord` · `~/.config/discordptb` · Flatpak `~/.var/app/com.discordapp.Discord/config/discord` · Snap `~/snap/discord/current/.config/discord` |
+| Windows | `%AppData%\discord` · `%AppData%\discordptb` _(paths unverified upstream — confirm with the user)_ |
+
+macOS/Linux setup block (adjust `default_guild_id` to the user's primary server;
+on Windows, do the same steps in PowerShell with the `%AppData%` candidates):
 
 ```bash
-DISCORD_DIR="$HOME/Library/Application Support/discord"
-PTB_KB=$(du -sk "$HOME/Library/Application Support/discordptb/Cache" 2>/dev/null | cut -f1)
-STABLE_KB=$(du -sk "$HOME/Library/Application Support/discord/Cache" 2>/dev/null | cut -f1)
-[ "${PTB_KB:-0}" -gt "${STABLE_KB:-0}" ] && DISCORD_DIR="$HOME/Library/Application Support/discordptb"
+DISCORD_DIR=""; BIGGEST=0
+for d in "$HOME/Library/Application Support/discordptb" \
+         "$HOME/Library/Application Support/discord" \
+         "$HOME/.config/discordptb" \
+         "$HOME/.config/discord" \
+         "$HOME/.var/app/com.discordapp.Discord/config/discord" \
+         "$HOME/snap/discord/current/.config/discord"; do
+  [ -d "$d/Cache" ] || continue
+  KB=$(du -sk "$d/Cache" 2>/dev/null | cut -f1)
+  [ "${KB:-0}" -gt "$BIGGEST" ] && BIGGEST=$KB && DISCORD_DIR="$d"
+done
+echo "Using cache: $DISCORD_DIR"
 
-mkdir -p "$HOME/Library/Application Support/discrawl"
-cat > "$HOME/Library/Application Support/discrawl/config.toml" <<EOF
+CONF=$(discrawl doctor 2>/dev/null | sed -n 's/^config_path=//p')
+CONFDIR=$(dirname "$CONF")
+mkdir -p "$CONFDIR"
+cat > "$CONF" <<EOF
 version = 1
 default_guild_id = '<primary-server-id>'
 guild_ids = ['<primary-server-id>']
-db_path = '$HOME/Library/Application Support/discrawl/discrawl.db'
-cache_dir = '$HOME/Library/Caches/discrawl'
-log_dir = '$HOME/Library/Application Support/discrawl/logs'
+db_path = '$CONFDIR/discrawl.db'
+cache_dir = '$CONFDIR/cache'
+log_dir = '$CONFDIR/logs'
 
 [discord]
 token_source = 'env'
@@ -210,8 +240,9 @@ discrawl sync --source discord --full # first backfill (bot-only; see the sync r
 - **`discrawl init` exits with a token error / HTTP 401** → init always validates the
   token. Tokenless users skip init entirely and write the config by hand (Path A).
 - **Wiretap import reports 0 messages** → almost always the wrong `[desktop] path` —
-  the user runs the other client flavor (`discord` vs `discordptb`). Compare cache
-  sizes as in Path A and repoint.
+  the user runs a different client flavor (`discord` vs `discordptb`) or, on Linux, a
+  sandboxed install (Flatpak/Snap paths). Compare cache sizes across the Path A
+  candidates and repoint.
 - **Search misses a message the user knows exists (wiretap mode)** → the app never
   cached it. Open + scroll that channel in Discord, then re-run
   `discrawl sync --source wiretap`.
