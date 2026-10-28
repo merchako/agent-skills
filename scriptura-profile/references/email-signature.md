@@ -34,14 +34,29 @@ Verify `{{PHONE_E164}}` dials the same number `{{PHONE_PRETTY}}` shows: a mismat
 
 `{{PHOTO_URL}}` must be publicly fetchable. Options, best first:
 
-1. The Scriptura Google account avatar (the badged profile photo, once set): in Gmail, open the account menu, right-click the avatar → _Copy image address_, and change the trailing size to `=s112-c` (2× the 56px display). It updates whenever the profile photo does.
+1. The Scriptura Google account avatar (the badged profile photo, once set): the _My picture_ image on Gmail → Settings → General, or right-click the account-menu avatar → _Copy image address_. It looks like `https://lh3.googleusercontent.com/a/<id>=s96`; replace the trailing size with `=s112-c` (2× the 56px display). Use the `/a/<id>` URL, not an `/ogw/` one. It updates whenever the profile photo does.
 2. Any public host the person controls.
 
 Gmail's signature editor can also insert an uploaded image directly (_Insert image_ → _Upload_); in that case leave the `<img>` out of the HTML and insert the photo in the editor after pasting.
 
 ## Install (Gmail)
 
+Check _Settings → General → Signature_ first: if a signature already exists, show it to the person before replacing it.
+
+### By hand
+
 1. Write the filled HTML to a `.html` file and open it in a browser.
 2. Select the rendered signature (not the source), copy.
 3. Gmail (scriptura.org account) → Settings → See all settings → General → Signature → _Create new_ → paste.
 4. Set it as the default for new emails and replies → _Save changes_ at the bottom of the page.
+
+### With browser automation
+
+Same flow, minus the clipboard:
+
+1. Open `https://mail.google.com/mail/u/<N>/#settings/general`, where `<N>` is the scriptura.org account's index (an email address in place of `<N>` errors). Confirm the page title names the scriptura.org address.
+2. _Create new_ → name it `Scriptura` → _Create_.
+3. Fill the editor (`div[contenteditable][aria-label="Signature"]`) by dispatching a synthetic paste: a `ClipboardEvent('paste')` whose `DataTransfer` carries the HTML as `text/html`. Setting `innerHTML` or `execCommand('insertHTML')` fails — Gmail enforces Trusted Types.
+4. Set both _Signature defaults_ `<select>`s to `Scriptura` (set `value`, dispatch `change`), click _Save Changes_.
+
+Done when a reload of the settings page shows the signature with every link intact and both defaults set to `Scriptura`.
