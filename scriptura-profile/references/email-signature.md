@@ -1,6 +1,6 @@
 # Scriptura email signature
 
-A compact two-column signature: square photo left; name, title, org, and contact links right, all small and grey under the bold name. Fill every `{{…}}`; drop any line or link the person doesn't want (Calendly, location, phone) along with its `&nbsp;` separator.
+A compact two-column signature: square photo left; name and title, then a links row (Scriptura plus the person's own pages), then a contact row — all small and grey under the bold name. Fill every `{{…}}`; drop any link the person doesn't want along with its `&nbsp;` separator.
 
 | Placeholder        | Value                                                                         |
 | ------------------ | ----------------------------------------------------------------------------- |
@@ -9,11 +9,12 @@ A compact two-column signature: square photo left; name, title, org, and contact
 | `{{PHOTO_URL}}`    | Public image URL (see _Photo_ below)                                          |
 | `{{PHONE_E164}}`   | Dial string, digits only with `+` country code: `+18175551234`                |
 | `{{PHONE_PRETTY}}` | Display form: `+1 817 555-1234`                                               |
-| `{{CITY}}`         | `City, Country`, as displayed                                                 |
-| `{{CITY_URL}}`     | `https://maps.google.com/?q=` + URL-encoded `{{CITY}}`                        |
+| `{{PERSONAL_LINKS}}` | Zero or more links to the person's own pages (ministry/support page, portfolio), each as the `<a>` pattern used on that row, `&nbsp;`-separated |
+| `{{PLACE}}`        | Location label as displayed — ask how specific; many prefer country only      |
+| `{{PLACE_URL}}`    | `https://maps.google.com/?q=` + URL-encoded actual location (may be more specific than the label) |
 | `{{UTC}}`          | Offset label, e.g. `UTC-6`; note DST if the zone has it (`UTC-5/-4`)           |
 | `{{TIME_URL}}`     | `https://time.is/<City_or_Country>`                                           |
-| `{{BOOKING_URL}}`  | Calendly / booking page                                                       |
+| `{{BOOKING_URL}}`  | Booking page; Scriptura staff use Google Calendar appointment schedules (see _Booking link_) |
 
 Verify `{{PHONE_E164}}` dials the same number `{{PHONE_PRETTY}}` shows: a mismatched `tel:` link is the classic copy-paste bug in this template.
 
@@ -23,12 +24,16 @@ Verify `{{PHONE_E164}}` dials the same number `{{PHONE_PRETTY}}` shows: a mismat
 <td>
 <div><b>{{NAME}}&nbsp;</b><span style="font-size: 0.8em; margin-left: 8px; color: grey;">{{TITLE}}</span></div>
 <div style="font-size: 0.8em; color: grey; min-width: 200px; max-width: 400px;">
-<div style="margin-top: 4px;"><span style="margin-right: 8px;">Scriptura</span>&nbsp;<a href="https://www.scriptura.org/" target="_blank" style="color: grey; margin-right: 8px;">scriptura.org</a></div>
-<div style="margin-top: 4px;"><a href="tel:{{PHONE_E164}}" target="_blank" style="color: grey; margin-right: 8px;">{{PHONE_PRETTY}}</a>&nbsp;<a href="{{CITY_URL}}" target="_blank" style="color: grey; margin-right: 8px;">{{CITY}}</a>&nbsp;<a href="{{TIME_URL}}" target="_blank" style="color: grey; margin-right: 8px;">{{UTC}}</a>&nbsp;<a href="{{BOOKING_URL}}" target="_blank" style="color: grey; margin-right: 8px;">Calendly</a></div>
+<div style="margin-top: 4px;"><a href="https://www.scriptura.org/" target="_blank" style="color: grey; margin-right: 8px;">Scriptura</a>&nbsp;{{PERSONAL_LINKS}}</div>
+<div style="margin-top: 4px;"><a href="tel:{{PHONE_E164}}" target="_blank" style="color: grey; margin-right: 8px;">{{PHONE_PRETTY}}</a>&nbsp;<a href="{{PLACE_URL}}" target="_blank" style="color: grey; margin-right: 8px;">{{PLACE}}</a>&nbsp;<a href="{{TIME_URL}}" target="_blank" style="color: grey; margin-right: 8px;">{{UTC}}</a>&nbsp;<a href="{{BOOKING_URL}}" target="_blank" style="color: grey; margin-right: 8px;">Book a time</a></div>
 </div>
 </td>
 </tr></tbody></table>
 ```
+
+## Booking link
+
+Google Calendar → sidebar _Booking pages_ → click the schedule → _Copy link_. The copied `calendar.app.google/…` short link can be dead ("Dynamic Link Not Found"); open it before using it. The durable form is the full URL: `https://calendar.google.com/calendar/appointments/<id>=` (all of the person's booking pages) or `…/appointments/schedules/<id>` (one schedule). With browser automation, both appear in the page HTML once the schedule's detail card is open.
 
 ## Photo
 
