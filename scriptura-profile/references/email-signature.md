@@ -33,7 +33,7 @@ Verify `{{PHONE_E164}}` dials the same number `{{PHONE_PRETTY}}` shows: a mismat
 
 ## Booking link
 
-Google Calendar → sidebar _Booking pages_ → click the schedule → _Copy link_. The copied `calendar.app.google/…` short link can be dead ("Dynamic Link Not Found"); open it before using it. The durable form is the full URL: `https://calendar.google.com/calendar/appointments/<id>=` (all of the person's booking pages) or `…/appointments/schedules/<id>` (one schedule). With browser automation, both appear in the page HTML once the schedule's detail card is open.
+Google Calendar → sidebar _Booking pages_ → click the schedule → _Copy link_, which gives a `calendar.app.google/…` short link. Open it before using it: a mistyped one shows "Dynamic Link Not Found". If the person can't produce a working short link, use the full URL, which appears in the page HTML once the schedule's detail card is open: `…/calendar/appointments/schedules/<id>` (one schedule) or `…/calendar/appointments/<id>=` (all of the person's booking pages).
 
 ## Photo
 
